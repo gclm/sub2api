@@ -2848,7 +2848,19 @@ export default {
         antigravityOauth: 'Antigravity OAuth',
         antigravityApikey: 'Connect via Base URL + API Key',
         upstream: 'Upstream',
-        upstreamDesc: 'Connect via Base URL + API Key'
+        upstreamDesc: 'Connect via Base URL + API Key',
+        apikeyChatCompletions: 'OpenAI Chat Completions Upstream',
+        apikeyChatCompletionsDesc:
+          'Connect to any OpenAI-compatible /v1/chat/completions endpoint via full URL + API Key',
+        apikeyChatCompletionsAnthropicHint:
+          'On the Anthropic platform, the gateway automatically converts /v1/messages requests to OpenAI Chat Completions and translates the upstream response back. The /v1/chat/completions endpoint passes through unchanged.',
+        chatCompletionsUrl: 'Chat Completions URL',
+        chatCompletionsUrlPlaceholder:
+          'Full endpoint URL, e.g. https://api.deepseek.com/v1/chat/completions',
+        chatCompletionsUrlHint: 'Full /v1/chat/completions endpoint URL of the upstream service',
+        chatCompletionsApiKey: 'API Key',
+        chatCompletionsApiKeyPlaceholder: 'API Key for the upstream service',
+        chatCompletionsApiKeyHint: 'Bearer token used to authenticate against the upstream'
       },
       status: {
         active: 'Active',
@@ -3226,6 +3238,8 @@ export default {
         'When enabled, warmup requests like title generation will return mock responses without consuming upstream tokens',
       autoPauseOnExpired: 'Auto Pause On Expired',
       autoPauseOnExpiredDesc: 'When enabled, the account will auto pause scheduling after it expires',
+      stripReasoningEffortOnCC: 'Strip reasoning_effort (Chat Completions)',
+      stripReasoningEffortOnCCDesc: 'Drop reasoning_effort when forwarding /responses traffic as /v1/chat/completions. Enable for upstreams that reject this combination, e.g. b.ai.',
       // Quota control (Anthropic OAuth/SetupToken only)
       quotaControl: {
         title: 'Quota Control',
