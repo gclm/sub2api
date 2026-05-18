@@ -98,7 +98,7 @@ type CreateAccountRequest struct {
 	Name                    string         `json:"name" binding:"required"`
 	Notes                   *string        `json:"notes"`
 	Platform                string         `json:"platform" binding:"required"`
-	Type                    string         `json:"type" binding:"required,oneof=oauth setup-token apikey upstream bedrock service_account"`
+	Type                    string         `json:"type" binding:"required,oneof=oauth setup-token apikey upstream bedrock service_account apikey-chat-completions"`
 	Credentials             map[string]any `json:"credentials" binding:"required"`
 	Extra                   map[string]any `json:"extra"`
 	ProxyID                 *int64         `json:"proxy_id"`
@@ -108,8 +108,9 @@ type CreateAccountRequest struct {
 	LoadFactor              *int           `json:"load_factor"`
 	GroupIDs                []int64        `json:"group_ids"`
 	ExpiresAt               *int64         `json:"expires_at"`
-	AutoPauseOnExpired      *bool          `json:"auto_pause_on_expired"`
-	ConfirmMixedChannelRisk *bool          `json:"confirm_mixed_channel_risk"` // 用户确认混合渠道风险
+	AutoPauseOnExpired       *bool `json:"auto_pause_on_expired"`
+	StripReasoningEffortOnCC *bool `json:"strip_reasoning_effort_on_cc"`
+	ConfirmMixedChannelRisk  *bool `json:"confirm_mixed_channel_risk"` // 用户确认混合渠道风险
 }
 
 // UpdateAccountRequest represents update account request
@@ -117,7 +118,7 @@ type CreateAccountRequest struct {
 type UpdateAccountRequest struct {
 	Name                    string         `json:"name"`
 	Notes                   *string        `json:"notes"`
-	Type                    string         `json:"type" binding:"omitempty,oneof=oauth setup-token apikey upstream bedrock service_account"`
+	Type                    string         `json:"type" binding:"omitempty,oneof=oauth setup-token apikey upstream bedrock service_account apikey-chat-completions"`
 	Credentials             map[string]any `json:"credentials"`
 	Extra                   map[string]any `json:"extra"`
 	ProxyID                 *int64         `json:"proxy_id"`
@@ -128,8 +129,9 @@ type UpdateAccountRequest struct {
 	Status                  string         `json:"status" binding:"omitempty,oneof=active inactive error"`
 	GroupIDs                *[]int64       `json:"group_ids"`
 	ExpiresAt               *int64         `json:"expires_at"`
-	AutoPauseOnExpired      *bool          `json:"auto_pause_on_expired"`
-	ConfirmMixedChannelRisk *bool          `json:"confirm_mixed_channel_risk"` // 用户确认混合渠道风险
+	AutoPauseOnExpired       *bool `json:"auto_pause_on_expired"`
+	StripReasoningEffortOnCC *bool `json:"strip_reasoning_effort_on_cc"`
+	ConfirmMixedChannelRisk  *bool `json:"confirm_mixed_channel_risk"` // 用户确认混合渠道风险
 }
 
 // BulkUpdateAccountsRequest represents the payload for bulk editing accounts
@@ -546,9 +548,10 @@ func (h *AccountHandler) Create(c *gin.Context) {
 			RateMultiplier:        req.RateMultiplier,
 			LoadFactor:            req.LoadFactor,
 			GroupIDs:              req.GroupIDs,
-			ExpiresAt:             req.ExpiresAt,
-			AutoPauseOnExpired:    req.AutoPauseOnExpired,
-			SkipMixedChannelCheck: skipCheck,
+			ExpiresAt:                req.ExpiresAt,
+			AutoPauseOnExpired:       req.AutoPauseOnExpired,
+			StripReasoningEffortOnCC: req.StripReasoningEffortOnCC,
+			SkipMixedChannelCheck:    skipCheck,
 		})
 		if execErr != nil {
 			return nil, execErr
@@ -625,9 +628,10 @@ func (h *AccountHandler) Update(c *gin.Context) {
 		LoadFactor:            req.LoadFactor,
 		Status:                req.Status,
 		GroupIDs:              req.GroupIDs,
-		ExpiresAt:             req.ExpiresAt,
-		AutoPauseOnExpired:    req.AutoPauseOnExpired,
-		SkipMixedChannelCheck: skipCheck,
+		ExpiresAt:                req.ExpiresAt,
+		AutoPauseOnExpired:       req.AutoPauseOnExpired,
+		StripReasoningEffortOnCC: req.StripReasoningEffortOnCC,
+		SkipMixedChannelCheck:    skipCheck,
 	})
 	if err != nil {
 		// 检查是否为混合渠道错误
@@ -1247,9 +1251,10 @@ func (h *AccountHandler) BatchCreate(c *gin.Context) {
 				Priority:              item.Priority,
 				RateMultiplier:        item.RateMultiplier,
 				GroupIDs:              item.GroupIDs,
-				ExpiresAt:             item.ExpiresAt,
-				AutoPauseOnExpired:    item.AutoPauseOnExpired,
-				SkipMixedChannelCheck: skipCheck,
+				ExpiresAt:                item.ExpiresAt,
+				AutoPauseOnExpired:       item.AutoPauseOnExpired,
+				StripReasoningEffortOnCC: item.StripReasoningEffortOnCC,
+				SkipMixedChannelCheck:    skipCheck,
 			})
 			if err != nil {
 				failed++

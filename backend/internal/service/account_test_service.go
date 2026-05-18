@@ -179,6 +179,17 @@ func (s *AccountTestService) TestAccountConnection(c *gin.Context, accountID int
 		return s.sendErrorAndEnd(c, "Account not found")
 	}
 
+	// apikey-chat-completions accounts use the same CC endpoint test regardless of platform
+	// (the upstream is an arbitrary OpenAI-compatible CC endpoint, not platform-bound).
+	if account.Type == AccountTypeAPIKeyChatCompletions {
+		testModelID := modelID
+		if testModelID == "" {
+			testModelID = openai.DefaultTestModel
+		}
+		testModelID = account.GetMappedModel(testModelID)
+		return s.testOpenAIChatCompletionsConnection(c, account, testModelID)
+	}
+
 	// Route to platform-specific test method
 	if account.IsOpenAI() {
 		return s.testOpenAIAccountConnection(c, account, modelID, prompt, normalizeAccountTestMode(mode))
@@ -509,6 +520,11 @@ func (s *AccountTestService) testOpenAIAccountConnection(c *gin.Context, account
 	if mode == AccountTestModeCompact {
 		testModelID = resolveOpenAICompactForwardModel(account, testModelID)
 		return s.testOpenAICompactConnection(c, account, testModelID)
+	}
+
+	// apikey-chat-completions accounts use the CC endpoint directly
+	if account.Type == AccountTypeAPIKeyChatCompletions {
+		return s.testOpenAIChatCompletionsConnection(c, account, testModelID)
 	}
 
 	// Route to image generation test if an image model is selected
@@ -1511,6 +1527,138 @@ func (s *AccountTestService) testOpenAIImageOAuth(c *gin.Context, ctx context.Co
 
 	s.sendEvent(c, TestEvent{Type: "test_complete", Success: true})
 	return nil
+}
+
+// testOpenAIChatCompletionsConnection tests an apikey-chat-completions account by sending
+// a streaming Chat Completions request to the configured chat_completions_url.
+func (s *AccountTestService) testOpenAIChatCompletionsConnection(c *gin.Context, account *Account, testModelID string) error {
+	ctx := c.Request.Context()
+
+	authToken := account.GetUpstreamAPIKey()
+	if authToken == "" {
+		return s.sendErrorAndEnd(c, "No API key available")
+	}
+
+	ccURL := account.GetOpenAIChatCompletionsURL()
+	if ccURL == "" {
+		return s.sendErrorAndEnd(c, "No chat_completions_url configured for this account")
+	}
+	if _, err := s.validateUpstreamBaseURL(ccURL); err != nil {
+		return s.sendErrorAndEnd(c, fmt.Sprintf("Invalid chat_completions_url: %s", err.Error()))
+	}
+
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Header().Set("X-Accel-Buffering", "no")
+	c.Writer.Flush()
+
+	payloadBytes, _ := json.Marshal(createOpenAICCTestPayload(testModelID))
+	s.sendEvent(c, TestEvent{Type: "test_start", Model: testModelID})
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ccURL, bytes.NewReader(payloadBytes))
+	if err != nil {
+		return s.sendErrorAndEnd(c, "Failed to create request")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+authToken)
+	req.Header.Set("Accept", "text/event-stream")
+
+	proxyURL := ""
+	if account.ProxyID != nil && account.Proxy != nil {
+		proxyURL = account.Proxy.URL()
+	}
+
+	resp, err := s.httpUpstream.DoWithTLS(req, proxyURL, account.ID, account.Concurrency, s.tlsFPProfileService.ResolveTLSProfile(account))
+	if err != nil {
+		return s.sendErrorAndEnd(c, fmt.Sprintf("Request failed: %s", err.Error()))
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == http.StatusTooManyRequests {
+			s.reconcileOpenAI429State(ctx, account, resp.Header, body)
+		}
+		if resp.StatusCode == http.StatusUnauthorized && s.accountRepo != nil {
+			errMsg := fmt.Sprintf("Authentication failed (401): %s", string(body))
+			_ = s.accountRepo.SetError(ctx, account.ID, errMsg)
+		}
+		return s.sendErrorAndEnd(c, fmt.Sprintf("API returned %d: %s", resp.StatusCode, string(body)))
+	}
+
+	return s.processOpenAICCStream(c, resp.Body)
+}
+
+// createOpenAICCTestPayload creates a Chat Completions format test payload.
+func createOpenAICCTestPayload(modelID string) map[string]any {
+	return map[string]any{
+		"model": modelID,
+		"messages": []map[string]any{
+			{"role": "user", "content": "hi"},
+		},
+		"stream":     true,
+		"max_tokens": 50,
+	}
+}
+
+// processOpenAICCStream processes an SSE stream in Chat Completions format.
+// Chunks carry content in choices[].delta.content; [DONE] or finish_reason signals completion.
+func (s *AccountTestService) processOpenAICCStream(c *gin.Context, body io.Reader) error {
+	reader := bufio.NewReader(body)
+
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				s.sendEvent(c, TestEvent{Type: "test_complete", Success: true})
+				return nil
+			}
+			return s.sendErrorAndEnd(c, fmt.Sprintf("Stream read error: %s", err.Error()))
+		}
+
+		line = strings.TrimSpace(line)
+		if line == "" || !sseDataPrefix.MatchString(line) {
+			continue
+		}
+
+		jsonStr := sseDataPrefix.ReplaceAllString(line, "")
+		if jsonStr == "[DONE]" {
+			s.sendEvent(c, TestEvent{Type: "test_complete", Success: true})
+			return nil
+		}
+
+		var data map[string]any
+		if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
+			continue
+		}
+
+		// Top-level error field (some upstreams embed errors in the stream)
+		if errData, ok := data["error"].(map[string]any); ok {
+			errorMsg := "Unknown error"
+			if msg, ok := errData["message"].(string); ok && msg != "" {
+				errorMsg = msg
+			}
+			return s.sendErrorAndEnd(c, errorMsg)
+		}
+
+		choices, _ := data["choices"].([]any)
+		for _, choice := range choices {
+			choiceMap, ok := choice.(map[string]any)
+			if !ok {
+				continue
+			}
+			if delta, ok := choiceMap["delta"].(map[string]any); ok {
+				if content, ok := delta["content"].(string); ok && content != "" {
+					s.sendEvent(c, TestEvent{Type: "content", Text: content})
+				}
+			}
+			if finishReason, ok := choiceMap["finish_reason"].(string); ok && finishReason != "" && finishReason != "null" {
+				s.sendEvent(c, TestEvent{Type: "test_complete", Success: true})
+				return nil
+			}
+		}
+	}
 }
 
 func (s *AccountTestService) sendEvent(c *gin.Context, event TestEvent) {

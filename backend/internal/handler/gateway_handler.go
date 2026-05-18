@@ -499,6 +499,11 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 			requestPayloadHash := service.HashUsageRequestPayload(body)
 			inboundEndpoint := GetInboundEndpoint(c)
 			upstreamEndpoint := GetUpstreamEndpoint(c, account.Platform)
+			if account.IsOpenAIChatCompletionsUpstream() {
+				// /v1/messages 流量被适配为 /v1/chat/completions 上游调用，与 OpenAI 侧 /responses → CC
+				// 改造保持一致，便于 Ops 区分。
+				upstreamEndpoint = "/v1/chat/completions"
+			}
 
 			if result.ReasoningEffort == nil {
 				result.ReasoningEffort = service.NormalizeClaudeOutputEffort(parsedReq.OutputEffort)
@@ -887,6 +892,11 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 			requestPayloadHash := service.HashUsageRequestPayload(body)
 			inboundEndpoint := GetInboundEndpoint(c)
 			upstreamEndpoint := GetUpstreamEndpoint(c, account.Platform)
+			if account.IsOpenAIChatCompletionsUpstream() {
+				// /v1/messages 流量被适配为 /v1/chat/completions 上游调用，与 OpenAI 侧 /responses → CC
+				// 改造保持一致，便于 Ops 区分。
+				upstreamEndpoint = "/v1/chat/completions"
+			}
 
 			if result.ReasoningEffort == nil {
 				result.ReasoningEffort = service.NormalizeClaudeOutputEffort(parsedReq.OutputEffort)

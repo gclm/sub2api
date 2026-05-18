@@ -127,7 +127,19 @@ func (s *OpenAIGatewayService) forwardAsRawChatCompletions(
 	if err != nil {
 		return nil, fmt.Errorf("invalid base_url: %w", err)
 	}
-	targetURL := buildOpenAIChatCompletionsURL(validatedURL)
+	var targetURL string
+	if account.IsOpenAIChatCompletionsUpstream() {
+		ccURL := account.GetOpenAIChatCompletionsURL()
+		if ccURL == "" {
+			return nil, fmt.Errorf("account %d missing chat_completions_url", account.ID)
+		}
+		if _, err := s.validateUpstreamBaseURL(ccURL); err != nil {
+			return nil, fmt.Errorf("invalid chat_completions_url: %w", err)
+		}
+		targetURL = ccURL
+	} else {
+		targetURL = buildOpenAIChatCompletionsURL(validatedURL)
+	}
 
 	upstreamCtx, releaseUpstreamCtx := detachUpstreamContext(ctx)
 	upstreamReq, err := http.NewRequestWithContext(upstreamCtx, http.MethodPost, targetURL, bytes.NewReader(upstreamBody))

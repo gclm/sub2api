@@ -3055,6 +3055,18 @@ export default {
         antigravityApikey: '通过 Base URL + API Key 连接',
         upstream: '对接上游',
         upstreamDesc: '通过 Base URL + API Key 连接上游',
+        apikeyChatCompletions: 'OpenAI Chat Completions 上游',
+        apikeyChatCompletionsDesc:
+          '通过完整 URL + API Key 对接任意 OpenAI 兼容的 /v1/chat/completions 端点',
+        apikeyChatCompletionsAnthropicHint:
+          'Anthropic 平台下，网关会自动把 /v1/messages 请求转换为 OpenAI Chat Completions 发给上游，再将响应翻译回 Messages 协议；/v1/chat/completions 走原样透传。',
+        chatCompletionsUrl: 'Chat Completions URL',
+        chatCompletionsUrlPlaceholder:
+          '完整端点 URL，例如 https://api.deepseek.com/v1/chat/completions',
+        chatCompletionsUrlHint: '上游服务的 /v1/chat/completions 完整端点 URL',
+        chatCompletionsApiKey: 'API Key',
+        chatCompletionsApiKeyPlaceholder: '上游服务的 API Key',
+        chatCompletionsApiKeyHint: '用于鉴权上游服务的 Bearer Token',
         api_key: 'API Key',
         cookie: 'Cookie'
       },
@@ -3388,6 +3400,8 @@ export default {
       interceptWarmupRequestsDesc: '启用后，标题生成等预热请求将返回 mock 响应，不消耗上游 token',
       autoPauseOnExpired: '过期自动暂停调度',
       autoPauseOnExpiredDesc: '启用后，账号过期将自动暂停调度',
+      stripReasoningEffortOnCC: '剥离 reasoning_effort（Chat Completions）',
+      stripReasoningEffortOnCCDesc: '当 /responses 请求被转换为 /v1/chat/completions 转发时丢弃 reasoning_effort。适用于拒绝该组合的上游，例如 b.ai。',
       // Quota control (Anthropic OAuth/SetupToken only)
       quotaControl: {
         title: '配额控制',

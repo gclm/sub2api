@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -54,8 +55,9 @@ type DataAccount struct {
 	Concurrency        int            `json:"concurrency"`
 	Priority           int            `json:"priority"`
 	RateMultiplier     *float64       `json:"rate_multiplier,omitempty"`
-	ExpiresAt          *int64         `json:"expires_at,omitempty"`
-	AutoPauseOnExpired *bool          `json:"auto_pause_on_expired,omitempty"`
+	ExpiresAt               *int64 `json:"expires_at,omitempty"`
+	AutoPauseOnExpired      *bool  `json:"auto_pause_on_expired,omitempty"`
+	StripReasoningEffortOnCC *bool `json:"strip_reasoning_effort_on_cc,omitempty"`
 }
 
 type DataImportRequest struct {
@@ -158,8 +160,9 @@ func (h *AccountHandler) ExportData(c *gin.Context) {
 			Concurrency:        acc.Concurrency,
 			Priority:           acc.Priority,
 			RateMultiplier:     acc.RateMultiplier,
-			ExpiresAt:          expiresAt,
-			AutoPauseOnExpired: &acc.AutoPauseOnExpired,
+			ExpiresAt:                expiresAt,
+			AutoPauseOnExpired:       &acc.AutoPauseOnExpired,
+			StripReasoningEffortOnCC: &acc.StripReasoningEffortOnCC,
 		})
 	}
 
@@ -313,9 +316,10 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 			Priority:             item.Priority,
 			RateMultiplier:       item.RateMultiplier,
 			GroupIDs:             nil,
-			ExpiresAt:            item.ExpiresAt,
-			AutoPauseOnExpired:   item.AutoPauseOnExpired,
-			SkipDefaultGroupBind: skipDefaultGroupBind,
+			ExpiresAt:                item.ExpiresAt,
+			AutoPauseOnExpired:       item.AutoPauseOnExpired,
+			StripReasoningEffortOnCC: item.StripReasoningEffortOnCC,
+			SkipDefaultGroupBind:     skipDefaultGroupBind,
 		}
 
 		created, err := h.adminService.CreateAccount(ctx, accountInput)
@@ -561,6 +565,10 @@ func validateDataAccount(item DataAccount) error {
 	}
 	switch item.Type {
 	case service.AccountTypeOAuth, service.AccountTypeSetupToken, service.AccountTypeAPIKey, service.AccountTypeUpstream:
+	case service.AccountTypeAPIKeyChatCompletions:
+		if err := validateAPIKeyChatCompletionsCredentials(item.Credentials); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("account type is invalid: %s", item.Type)
 	}
@@ -573,6 +581,40 @@ func validateDataAccount(item DataAccount) error {
 	if item.Priority < 0 {
 		return errors.New("priority must be >= 0")
 	}
+	return nil
+}
+
+// validateAPIKeyChatCompletionsCredentials checks that an
+// AccountTypeAPIKeyChatCompletions account carries the minimum set of
+// credentials required by the upstream Chat Completions integration:
+// a valid http(s) chat_completions_url plus a non-empty api_key.
+func validateAPIKeyChatCompletionsCredentials(creds map[string]any) error {
+	if creds == nil {
+		return errors.New("credentials are required for apikey-chat-completions accounts")
+	}
+
+	rawURL, _ := creds["chat_completions_url"].(string)
+	rawURL = strings.TrimSpace(rawURL)
+	if rawURL == "" {
+		return errors.New("chat_completions_url is required for apikey-chat-completions accounts")
+	}
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("chat_completions_url is invalid: %w", err)
+	}
+	scheme := strings.ToLower(parsed.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return fmt.Errorf("chat_completions_url must use http or https scheme, got %q", parsed.Scheme)
+	}
+	if parsed.Host == "" {
+		return errors.New("chat_completions_url must include a host")
+	}
+
+	apiKey, _ := creds["api_key"].(string)
+	if strings.TrimSpace(apiKey) == "" {
+		return errors.New("api_key is required for apikey-chat-completions accounts")
+	}
+
 	return nil
 }
 
