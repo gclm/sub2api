@@ -1,0 +1,657 @@
+# Instincts generated from https://github.com/gclm/sub2api
+# Generated: 2026-06-01T02:48:06.684Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: sub2api-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Commit Length
+
+## Action
+
+Write moderate-length commit messages (~52 characters)
+
+## Evidence
+
+- Average commit message length: 52 chars
+- Based on 26 commits
+
+---
+id: sub2api-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Naming Files
+
+## Action
+
+Use snake_case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: snake_case
+
+---
+id: sub2api-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: sub2api-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: 
+
+---
+id: sub2api-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Test Framework
+
+## Action
+
+Use vitest as the test framework
+
+## Evidence
+
+- Test framework detected: vitest
+- File pattern: *.spec.ts
+
+---
+id: sub2api-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Test Naming
+
+## Action
+
+Name test files using the pattern: *.spec.ts
+
+## Evidence
+
+- File pattern: *.spec.ts
+- Consistent across test files
+
+---
+id: sub2api-test-mocking
+trigger: "when mocking dependencies in tests"
+confidence: 0.75
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Test Mocking
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Mocking pattern detected: vi.mock
+- Consistent across test files
+
+---
+id: sub2api-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Test Types
+
+## Action
+
+Write unit, integration tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, integration
+- Coverage config: no
+
+---
+id: sub2api-workflow-refactoring
+trigger: "when refactoring code"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Workflow Refactoring
+
+## Action
+
+Follow the refactoring workflow:
+1. Ensure tests pass before refactor
+2. Refactor code structure
+3. Verify tests still pass
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~12x per month
+- Files: src/**/*
+
+---
+id: sub2api-workflow-add-or-enhance-admin-frontend-feature
+trigger: "when doing add or enhance admin frontend feature"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Workflow Add Or Enhance Admin Frontend Feature
+
+## Action
+
+Follow the add-or-enhance-admin-frontend-feature workflow:
+1. Edit or create Vue component(s) under frontend/src/views/admin or frontend/src/components/admin
+2. Update i18n translation files (frontend/src/i18n/locales/en.ts, zh.ts)
+3. Add or update related API files (frontend/src/api/admin/*.ts)
+4. Write or update frontend tests (frontend/src/views/admin/__tests__/*.spec.ts, frontend/src/components/admin/**/__tests__/*.spec.ts)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: frontend/src/views/admin/*.vue, frontend/src/components/admin/**/*.vue, frontend/src/i18n/locales/en.ts
+
+---
+id: sub2api-workflow-add-or-enhance-admin-api-endpoint
+trigger: "when doing add or enhance admin api endpoint"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Workflow Add Or Enhance Admin Api Endpoint
+
+## Action
+
+Follow the add-or-enhance-admin-api-endpoint workflow:
+1. Edit or create backend handler file (backend/internal/handler/admin/*_handler.go)
+2. Update backend routing (backend/internal/server/routes/admin.go)
+3. Optionally update or add service/repository logic (backend/internal/service/, backend/internal/repository/)
+4. Update or add frontend API file (frontend/src/api/admin/*.ts)
+5. Update or create related frontend component(s) (frontend/src/components/admin/, frontend/src/views/admin/)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/internal/handler/admin/*_handler.go, backend/internal/server/routes/admin.go, backend/internal/service/*.go
+
+---
+id: sub2api-workflow-gateway-refactor-cycle
+trigger: "when doing gateway refactor cycle"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Workflow Gateway Refactor Cycle
+
+## Action
+
+Follow the gateway-refactor-cycle workflow:
+1. Edit multiple files in backend/internal/handler/ and backend/internal/service/ related to gateway logic
+2. Update or add tests in backend/internal/service/ (e.g., *_test.go, *_benchmark_test.go)
+3. Make incremental changes over several commits, each targeting a specific aspect (e.g., request body retention, error body reads, snapshotting inputs)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: backend/internal/handler/gateway_*.go, backend/internal/handler/openai_gateway_handler.go, backend/internal/service/gateway_*.go
+
+---
+id: sub2api-workflow-bugfix-with-targeted-test-update
+trigger: "when doing bugfix with targeted test update"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/gclm/sub2api
+---
+
+# Sub2api Workflow Bugfix With Targeted Test Update
+
+## Action
+
+Follow the bugfix-with-targeted-test-update workflow:
+1. Edit the relevant backend service or handler file (backend/internal/service/*.go or backend/internal/handler/*.go)
+2. Update or add a test file (backend/internal/service/*_test.go or backend/internal/handler/*_test.go)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/internal/service/*.go, backend/internal/service/*_test.go, backend/internal/handler/*.go
+
+---
+id: sub2api-instinct-file-naming
+trigger: "When creating or renaming a file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct File Naming
+
+## Action
+
+Use snake_case for file names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files
+- Observed in backend/internal/handler/gateway_handler.go
+
+---
+id: sub2api-instinct-function-naming
+trigger: "When defining a function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions
+
+---
+id: sub2api-instinct-class-naming
+trigger: "When defining a class or struct"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Class Naming
+
+## Action
+
+Use PascalCase for class/struct names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes
+
+---
+id: sub2api-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants
+
+---
+id: sub2api-instinct-import-style
+trigger: "When importing modules or packages"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Import Style
+
+## Action
+
+Use a mixed import style as appropriate for the context
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+
+---
+id: sub2api-instinct-export-style
+trigger: "When exporting functions or variables"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+
+---
+id: sub2api-instinct-test-file-pattern
+trigger: "When creating a test file for frontend code"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Test File Pattern
+
+## Action
+
+Name the test file with the pattern *.spec.ts
+
+## Evidence
+
+- Pattern in testing.filePattern
+- Files like frontend/src/views/admin/__tests__/*.spec.ts
+
+---
+id: sub2api-instinct-test-framework
+trigger: "When writing frontend tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Test Framework
+
+## Action
+
+Use the Vitest testing framework
+
+## Evidence
+
+- Pattern in testing.framework
+
+---
+id: sub2api-instinct-test-types
+trigger: "When writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Test Types
+
+## Action
+
+Write both unit and integration tests as appropriate
+
+## Evidence
+
+- Pattern in testing.testTypes
+
+---
+id: sub2api-instinct-mocking-style
+trigger: "When mocking modules in frontend tests"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Mocking Style
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Pattern in testing.mockingStyle
+
+---
+id: sub2api-instinct-backend-test-pattern
+trigger: "When creating backend test files"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Backend Test Pattern
+
+## Action
+
+Name the test file with the pattern *_test.go
+
+## Evidence
+
+- Files like backend/internal/service/gateway_anthropic_apikey_passthrough_test.go
+
+---
+id: sub2api-instinct-commit-prefix
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Commit Prefix
+
+## Action
+
+Start the commit message with a prefix such as 'feat', 'fix', 'refactor', or 'perf'
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Examples like 'fix: enrich OpenAI OAuth token refresh'
+
+---
+id: sub2api-instinct-commit-length
+trigger: "When writing a commit message"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Commit Length
+
+## Action
+
+Keep the commit message concise, around 50 characters
+
+## Evidence
+
+- Pattern in commits.averageLength
+
+---
+id: sub2api-instinct-commit-scope
+trigger: "When writing a commit message for a specific module or feature"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Commit Scope
+
+## Action
+
+Include the scope in parentheses after the prefix (e.g., 'feat(admin): ...')
+
+## Evidence
+
+- Examples like 'feat(admin): 账号用量窗口 5h/7d 增加说明 tooltip'
+
+---
+id: sub2api-instinct-refactor-workflow
+trigger: "When refactoring code or cleaning up structure"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Refactor Workflow
+
+## Action
+
+Ensure tests pass before and after refactoring, and make changes in backend/internal/handler/ and backend/internal/service/
+
+## Evidence
+
+- Workflow 'refactoring'
+- Commit sequence in refactor(gateway): ...
+
+---
+id: sub2api-instinct-admin-frontend-feature
+trigger: "When adding or enhancing an admin UI feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Admin Frontend Feature
+
+## Action
+
+Edit/create Vue components under frontend/src/views/admin or frontend/src/components/admin, update i18n files, update related API files, and write/update frontend tests
+
+## Evidence
+
+- Workflow 'add-or-enhance-admin-frontend-feature'
+- Files and steps in workflow
+
+---
+id: sub2api-instinct-admin-api-endpoint
+trigger: "When adding or enhancing an admin API endpoint"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Admin Api Endpoint
+
+## Action
+
+Edit/create backend handler, update backend routing, update/add service/repository logic, update/add frontend API file, and update/create related frontend components
+
+## Evidence
+
+- Workflow 'add-or-enhance-admin-api-endpoint'
+- Files and steps in workflow
+
+---
+id: sub2api-instinct-gateway-refactor-cycle
+trigger: "When optimizing or refactoring gateway backend logic"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Gateway Refactor Cycle
+
+## Action
+
+Edit multiple gateway-related files in backend/internal/handler/ and backend/internal/service/, update/add tests, and make incremental targeted changes
+
+## Evidence
+
+- Workflow 'gateway-refactor-cycle'
+- Commit sequence and files in workflow
+
+---
+id: sub2api-instinct-bugfix-with-test
+trigger: "When fixing a backend bug"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: gclm/sub2api
+---
+
+# Sub2api Instinct Bugfix With Test
+
+## Action
+
+Edit the relevant backend service or handler file and update/add a corresponding test file
+
+## Evidence
+
+- Workflow 'bugfix-with-targeted-test-update'
+- Commit sequence and files in workflow
+
